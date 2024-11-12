@@ -1,8 +1,12 @@
 import React, { useState } from 'react'
-import { Text, Pressable, View, ScrollView, Image } from "react-native";
+import { Text, Pressable, View, ScrollView, Image, Touchable } from "react-native";
 import FormField from "../../components/FormField"
 import CustomButton from "../../components/CustomButton"
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { TouchableOpacity } from 'react-native';
+import * as DocumentPicker from "expo-document-picker";
+import { Alert } from "react-native";
+
 
 
 const Upload = () => {
@@ -10,16 +14,83 @@ const Upload = () => {
     {
       ProjectName: "",
       Type: "",
-      Description: ""
+      Description: "",
+      video:"null",
+      audio:"null"
     }
   )
+  const [uploading, setUploading] = useState(false);
 
-  const handleSubmit = () =>{}
+  const openPicker = async (selectType) => {
+    const result = await DocumentPicker.getDocumentAsync({
+      type:
+        selectType === "audio"
+          ? ["audio/mp3"]
+          : ["video/mp4"],
+    });
+
+    if (!result.canceled) {
+      if (selectType === "audio") {
+        setUploadForm({
+          ...UploadForm,
+          audio: result.assets[0],
+        });
+      }
+
+      if (selectType === "video") {
+        setUploadForm({
+          ...UploadForm,
+          video: result.assets[0],
+        });
+      }
+    } else {
+      setTimeout(() => {
+        Alert.alert("Document picked", JSON.stringify(result, null, 2));
+      }, 100);
+    }
+  };
+  
+
+  const handleSubmit = async () => {
+    if (
+      (UploadForm.Type === "") |
+      (UploadForm.title === "") |
+      !UploadForm.audio |
+      !UploadForm.video
+    ) {
+      return Alert.alert("Please provide all fields");
+    }
+    console.log(UploadForm);
+    
+    setUploading(true);
+    try {
+      await createVideoPost({
+        ...UploadForm,
+        userId: user.$id,
+      });
+
+      Alert.alert("Success", "Post uploaded successfully");
+      router.push("/home");
+    } catch (error) {
+      Alert.alert("Error", error.message);
+    } finally {
+      setUploadForm({
+        title: "",
+        video: null,
+        audio: null,
+        Type: "",
+        Description: ""
+      });
+
+      setUploading(false);
+    }
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-[#ecebf5]">
       <ScrollView contentContainerStyle={{ height: "100%" }}>
         <View className="w-full h-full rounded-[20px]">
+        
           <View className="absolute left-[95px] top-[56px] w-[204px] flex flex-col gap-[8px] justify-center">
             <View className="flex flex-row gap-[16px] items-center">
               <Image className="w-[27px] h-[27px] overflow-hidden" resizeMode="cover" source={require("../../assets/icons/tdesign_file-add.png")} />
@@ -36,13 +107,15 @@ const Upload = () => {
 
           <View className="absolute left-[11px] top-[394px] w-[371px] h-[322px]">
             <View className="absolute left-0 top-0 w-[371px] flex flex-col gap-[29px]">
-              <View className="bg-white border border-dashed border-[#326afd] rounded-[12px] h-[151px] p-5 flex flex-col items-center gap-3">
+            <TouchableOpacity onPress={() => openPicker("video")}>
+              <View className="bg-white border border-dashed border-[#326afd] rounded-[12px] h-[151px]  p-5 flex flex-col items-center gap-3">
                 <View className="flex flex-col justify-center items-center">
                   <Image className="w-[35px] h-[35px] overflow-hidden" resizeMode="cover" source={require("../../assets/icons/lets-icons_upload.png")} />
                   <Text className="text-[#333] text-left font-semibold text-xs">Drop your files here</Text>
                 </View>
                 <CustomButton title="Choose Files" handlePress={handleSubmit} containerStyles={" rounded-[6px] px-[10px] py-[7px] w-[102px] h-[30px] bg-[#326afd]"} textStyles={"text-[11px] text-white font-semibold"} />
               </View>
+            </TouchableOpacity>
 
               <View className="bg-white rounded-[12px] h-[68px] p-3 flex flex-col justify-center items-left">
                 <View className="flex flex-row gap-[14px] items-left">

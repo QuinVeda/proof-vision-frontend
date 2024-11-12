@@ -1,8 +1,8 @@
 import axios from 'axios';
-import asyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 class ApiService {
-    API_URL = "https://proofvision.easyml.me/api/"
+    API_URL = "https://proofvision.easyml.me/api"
 
     constructor() {
         this.ax = this.init();
@@ -19,9 +19,9 @@ class ApiService {
     }
 
     async getAuthHeaders() {
-        const token = await asyncStorage.getItem('token');
+        const token = await AsyncStorage.getItem('token');
         console.log(token);
-        
+
         return token ? { Authorization: `Bearer ${token}` } : {};
     }
 
@@ -43,33 +43,6 @@ class ApiService {
         } catch (error) {
             throw error;
         }
-    }
-
-    async createUser(data) {
-        try {
-            const response = await this.ax.post('auth/register/', data);
-            return response.data;
-        } catch (error) {
-            throw error;
-        }
-    }
-
-    async getCurrentUser() {
-        const res = await this.get('auth/user/')
-        return res;        
-    }
-
-    async login(data) {
-        console.log("fdsdfsd",data);
-        const res = await this.post('auth/login/', data);
-        console.log(res);
-        
-        await asyncStorage.setItem('token', res.data.access);
-        return res;
-    }
-
-    async logout() {
-        asyncStorage.removeItem('token');
     }
 
 }

@@ -3,12 +3,8 @@ import React, { useState, useEffect } from 'react'
 
 const FormField = ({title,value,handleChangeText,keyboardType,style, ...props}) => {
     const [showPass, setShowPass] = useState(false)
+    const [isTouched, setIsTouched] = useState(false)
 
-    if (style == undefined){
-        style="bg-[#1a1422]"
-
-    }
-    
     useEffect(()=>{
         if (props.showPass !== undefined){
         setShowPass(props.showPass)
@@ -16,11 +12,14 @@ const FormField = ({title,value,handleChangeText,keyboardType,style, ...props}) 
     }, [])
 
     return (
-        <View className={`flex flex-row w-full  items-center rounded-[39px] h-[52px] px-5 py-1 focus:border-white justify-between ${ style } ` } >
-            <TextInput className={`text-lg text-[#ffffff99] grow ${props.textstyle}`} 
+        <View
+            onFocus={() => setIsTouched(true)}
+            onBlur={() => setIsTouched(false)}
+            className={`flex flex-row w-full bg-[#1a1422] items-center rounded-[39px] h-[52px] px-5 py-1 justify-between border ${style} ${isTouched ? 'border-white' : 'border-[#1a1422]'}`}>
+            <TextInput className={`text-lg text-[#ffffff99] grow ${props.textstyle}`}
             value={value}
-                onChangeText={handleChangeText} 
-                placeholderTextColor={props.placeholderTextColor} 
+                onChangeText={handleChangeText}
+                placeholderTextColor={props.placeholderTextColor}
                 placeholder={title}
                 secureTextEntry={showPass}
              />

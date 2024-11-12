@@ -3,28 +3,11 @@ import * as React from "react";
 import { useEffect } from "react";
 import { Image, ImageBackground, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import apiService from "../../services/apiService";
-import { useGlobalContext } from "../../context/GlobalContext";
+import { useGlobalContext } from "../../context/GlobalProvider";
 
 
 export default function Home () {
   const { setIsLogged, setUser } = useGlobalContext();
-  const load = async () => {
-    const res = await apiService.getCurrentUser();
-    if (res.success) {
-      setIsLogged(true);
-      setUser(res.data);
-    }
-  }
-
-  useEffect(() => {
-    try {
-      load();
-    }
-    catch (e) {
-    }
-  }, []);
-
   return (
     <SafeAreaView className="flex-1 bg-[#08032b]">
       <ScrollView contentContainerStyle={{ height: "100%" }}>
@@ -40,4 +23,4 @@ export default function Home () {
     </SafeAreaView>
 
   );
-}; 
+};

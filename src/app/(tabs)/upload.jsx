@@ -6,11 +6,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 
 const Upload = () => {
-  const [UploadForm, setUploadForm] = useState(
+  const [form, setForm] = useState(
     {
-      ProjectName: "",
-      Type: "",
-      Description: ""
+      name: "",
+      type: "",
+      description: ""
     }
   )
 
@@ -29,9 +29,9 @@ const Upload = () => {
           </View>
 
           <View className="absolute left-1/2 top-[151px] w-[330px] flex flex-col gap-[16px] -ml-[164.5px]">
-            <FormField title="Project name" value={UploadForm.ProjectName} handleChangeText={(e) => setUploadForm({ ...UploadForm, ProjectName: e })} style={" bg-[#f6f6fa] rounded-[39px]"} textstyle={""} placeholderTextColor={"#333"} />
-            <FormField title="Type" value={UploadForm.Type} handleChangeText={(e) => setUploadForm({ ...UploadForm, Type: e })} style={" bg-[#f6f6fa] rounded-[39px]"} textstyle={""} placeholderTextColor={"#333"} />
-            <FormField title="Description (Optional)" value={UploadForm.Description} handleChangeText={(e) => setUploadForm({ ...UploadForm, Description: e })} style={" bg-[#f6f6fa] rounded-[39px]"} textstyle={""} placeholderTextColor={"#333"} />
+            <FormField title="Project name" value={form.name} handleChangeText={(e) => setUploadForm({ ...form, name: e })} style={" bg-[#f6f6fa] rounded-[39px]"} textstyle={""} placeholderTextColor={"#333"} />
+            <FormField title="Type" value={form.type} handleChangeText={(e) => setUploadForm({ ...form, type: e })} style={" bg-[#f6f6fa] rounded-[39px]"} textstyle={""} placeholderTextColor={"#333"} />
+            <FormField title="Description (Optional)" value={form.description} handleChangeText={(e) => setUploadForm({ ...form, description: e })} style={" bg-[#f6f6fa] rounded-[39px]"} textstyle={""} placeholderTextColor={"#333"} />
           </View>
 
           <View className="absolute left-[11px] top-[394px] w-[371px] h-[322px]">

@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import apiService from "../services/apiService";
 
 const GlobalContext = createContext();
 export const useGlobalContext = () => useContext(GlobalContext);

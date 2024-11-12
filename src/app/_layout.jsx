@@ -4,11 +4,11 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
 import React from 'react'
 import { useEffect } from "react";
-import GlobalProvider from "../context/GlobalContext";
+import GlobalProvider from "../context/GlobalProvider";
 
 
 SplashScreen.preventAutoHideAsync();
-      
+
       const RootLayout = () => {
   const [fontsLoaded,error] = useFonts({
     'InstrumentSans-Regular': require('../assets/fonts/InstrumentSans-Regular.ttf'),

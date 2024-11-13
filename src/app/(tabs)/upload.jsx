@@ -6,15 +6,25 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { TouchableOpacity } from 'react-native';
 import * as DocumentPicker from "expo-document-picker";
 import { Alert } from "react-native";
-
+import { router } from 'expo-router';
+import apiService from '../../services/apiService';
+import DropDownPicker from 'react-native-dropdown-picker';
+import { useGlobalContext } from '../../context/GlobalProvider';
 
 
 const Upload = () => {
+  const { setNewProject } = useGlobalContext();
+  const [open, setOpen] = useState(false);
+  const [value, setValue] = useState(null);
+  const [items, setItems] = useState([
+    { label: 'Video', value: 'video' },
+    { label: 'Audio', value: 'audio' },
+  ]);
   const [form, setForm] = useState(
     {
       name: "",
-      type: "",
-      description: ""
+      description: "",
+      file: null
     }
   )
   const [uploading, setUploading] = useState(false);
@@ -29,16 +39,16 @@ const Upload = () => {
 
     if (!result.canceled) {
       if (selectType === "audio") {
-        setUploadForm({
-          ...UploadForm,
-          audio: result.assets[0],
+        setForm({
+          ...form,
+          file: result.assets[0],
         });
       }
 
       if (selectType === "video") {
-        setUploadForm({
-          ...UploadForm,
-          video: result.assets[0],
+        setForm({
+          ...form,
+          file: result.assets[0],
         });
       }
     } else {
@@ -51,42 +61,50 @@ const Upload = () => {
 
   const handleSubmit = async () => {
     if (
-      (UploadForm.Type === "") |
-      (UploadForm.title === "") |
-      !UploadForm.audio |
-      !UploadForm.video
+      (value === "") |
+      (form.title === "") |
+      !form.file
     ) {
       return Alert.alert("Please provide all fields");
     }
-    console.log(UploadForm);
+    console.log(form);
 
     setUploading(true);
     try {
-      await createVideoPost({
-        ...UploadForm,
-        userId: user.$id,
+      const formData = new FormData();
+      formData.append("name", form.name);
+      formData.append("type", value);
+      formData.append("description", form.description);
+      formData.append("file", {
+        uri: form.file.uri,
+        name: form.file.name,       // File name
+        type: form.file.mimeType,    // File type (mime type)
       });
-
-      Alert.alert("Success", "Post uploaded successfully");
-      router.push("/home");
+      const res = await apiService.post("/detections/", formData);
+      if (res.success === true) {
+        Alert.alert("Success", "File uploaded successfully");
+        setNewProject(res.data);
+        router.push("/result");
+      } else {
+        Alert.alert("Error", res.message);
+      }
     } catch (error) {
       Alert.alert("Error", error.message);
     } finally {
-      setUploadForm({
-        title: "",
-        video: null,
-        audio: null,
-        Type: "",
-        Description: ""
+      setForm({
+        name: "",
+        file: null,
+        type: "",
+        description: ""
       });
-
+      setValue(null);
       setUploading(false);
     }
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-[#ecebf5]">
-      <ScrollView contentContainerStyle={{ height: "100%" }}>
+    <SafeAreaView className="flex-1 bg-[#ecebf5]" nestedScrollEnabled={true}>
+      <View contentContainerStyle={{ height: "100%" }}>
         <View className="w-full h-full rounded-[20px]">
 
           <View className="absolute left-[95px] top-[56px] w-[204px] flex flex-col gap-[8px] justify-center">
@@ -98,44 +116,37 @@ const Upload = () => {
           </View>
 
           <View className="absolute left-1/2 top-[151px] w-[330px] flex flex-col gap-[16px] -ml-[164.5px]">
-            <FormField title="Project name" value={form.name} handleChangeText={(e) => setUploadForm({ ...form, name: e })} style={" bg-[#f6f6fa] rounded-[39px]"} textstyle={""} placeholderTextColor={"#333"} />
-            <FormField title="Type" value={form.type} handleChangeText={(e) => setUploadForm({ ...form, type: e })} style={" bg-[#f6f6fa] rounded-[39px]"} textstyle={""} placeholderTextColor={"#333"} />
-            <FormField title="Description (Optional)" value={form.description} handleChangeText={(e) => setUploadForm({ ...form, description: e })} style={" bg-[#f6f6fa] rounded-[39px]"} textstyle={""} placeholderTextColor={"#333"} />
+            <FormField title="Project name" value={form.name} handleChangeText={(e) => setForm({ ...form, name: e })} style={" bg-[#f6f6fa] rounded-xl"} textstyle={"text-black"} placeholderTextColor={"#333"} />
+            {/* <FormField title="Type" value={form.type} handleChangeText={(e) => setForm({ ...form, type: e })} style={" bg-[#f6f6fa] rounded-[39px]"} textstyle={"text-black"} placeholderTextColor={"#333"} /> */}
+            <DropDownPicker
+              open={open}
+              value={value}
+              items={items}
+              setOpen={setOpen}
+              setValue={setValue}
+              setItems={setItems}
+            />
+            <FormField title="Description (Optional)" value={form.description} handleChangeText={(e) => setForm({ ...form, description: e })} style={" bg-[#f6f6fa] rounded-xl"} textstyle={"text-black"} placeholderTextColor={"#333"} />
           </View>
 
-          <View className="absolute left-[11px] top-[394px] w-[371px] h-[322px]">
-            <View className="absolute left-0 top-0 w-[371px] flex flex-col gap-[29px]">
-            <TouchableOpacity onPress={() => openPicker("video")}>
-              <View className="bg-white border border-dashed border-[#326afd] rounded-[12px] h-[151px]  p-5 flex flex-col items-center gap-3">
-                <View className="flex flex-col justify-center items-center">
-                  <Image className="w-[35px] h-[35px] overflow-hidden" resizeMode="cover" source={require("../../assets/icons/lets-icons_upload.png")} />
-                  <Text className="text-[#333] text-left font-semibold text-xs">Drop your files here</Text>
-                </View>
-                <CustomButton title="Choose Files" handlePress={handleSubmit} containerStyles={" rounded-[6px] px-[10px] py-[7px] w-[102px] h-[30px] bg-[#326afd]"} textStyles={"text-[11px] text-white font-semibold"} />
-              </View>
-            </TouchableOpacity>
-
-              <View className="bg-white rounded-[12px] h-[68px] p-3 flex flex-col justify-center items-left">
-                <View className="flex flex-row gap-[14px] items-left">
-                  <Image className="w-[27px] h-[30px] overflow-hidden" resizeMode="cover" source={require("../../assets/icons/solar_folder-with-files-outline.png")} />
-                  <View className="w- flex flex-col pb-2 ">
-                    <Text className="text-[#333] font-semibold text-[14px]">Test video.mp4</Text>
-                    <Text className="text-[#333] font-semibold text-[10px]">344 mb</Text>
+          <View className="left-[11px] top-[394px] w-[371px] h-[322px]">
+            <View className="absolute left-[22px] w-[337px] mx-auto flex flex-col">
+              <TouchableOpacity onPress={() => openPicker(value)}>
+                <View className="bg-white border border-dashed border-[#326afd] rounded-[12px] h-[151px]  p-5 flex flex-col items-center gap-3">
+                  <View className="flex flex-col justify-center items-center">
+                    <Image className="w-[35px] h-[35px] overflow-hidden" resizeMode="cover" source={require("../../assets/icons/lets-icons_upload.png")} />
+                    <Text className="text-[#333] text-left font-semibold text-xs">Drop your files here</Text>
                   </View>
+                  <CustomButton title="Choose Files" handlePress={() => openPicker(value)} containerStyles={" rounded-[6px] px-[10px] py-[7px] w-[102px] h-[30px] bg-[#326afd]"} textStyles={"text-[11px] text-white font-semibold"} />
                 </View>
-                <View className="w-[327px] h-[6px] flex flex-col relative z-10">
-                  <View className="absolute left-[119px] w-[208px] h-[6px] bg-[#e0e0e0] rounded-[12px]" />
-                  <View className="absolute left-0 w-[203px] h-[6px] bg-[#20e003] rounded-[12px]" />
-                </View>
-                <Image className="absolute top-[10%] right-[0.12%] w-[2.1%] h-[15.56%] z-20 overflow-hidden" resizeMode="cover" source={require("../../assets/icons/Vector.png")} />
-              </View>
+              </TouchableOpacity>
             </View>
 
-            <CustomButton title="submit" handlePress={handleSubmit} containerStyles={" px-5 py-2 rounded-[35px] left-[50%] top-[280px] -ml-[82.5px] w-[176px] h-[42px] bg-[#326afd] "} textStyles={"text-white font-semibold"} />
+            <CustomButton title="submit" handlePress={handleSubmit} containerStyles={"px-5 py-2 rounded-[35px] left-[180px] top-[250px] -ml-[82.5px] w-[176px] h-[42px] bg-[#326afd] "} textStyles={"text-white font-semibold"} />
 
           </View>
         </View>
-      </ScrollView>
+      </View>
     </SafeAreaView>
   );
 };

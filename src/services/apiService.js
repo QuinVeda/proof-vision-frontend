@@ -12,23 +12,21 @@ class ApiService {
         return axios.create({
             baseURL: this.API_URL,
             timeout: 10000,
-            headers: {
-                'Content-Type': 'application/json',
-            },
         });
     }
 
     async getAuthHeaders() {
         const token = await AsyncStorage.getItem('token');
-        console.log(token);
-
         return token ? { Authorization: `Bearer ${token}` } : {};
     }
 
     async get(endpoint) {
         try {
             const headers = await this.getAuthHeaders();
-            const response = await this.ax.get(endpoint, { headers });
+            const jsonHeaders = {
+                'Content-Type': 'application/json',
+            };
+            const response = await this.ax.get(endpoint, { headers: { ...headers, ...jsonHeaders } });
             return response.data;
         } catch (error) {
             throw error;
@@ -37,8 +35,15 @@ class ApiService {
 
     async post(endpoint, data) {
         try {
-            const headers = await this.getAuthHeaders();
-            const response = await this.ax.post(endpoint, data, { headers });
+            const authHeaders = await this.getAuthHeaders();
+            const jsonHeaders = {
+                'Content-Type': 'application/json',
+            };
+            const fileHeaders = {
+                'Content-Type': 'multipart/form-data',
+            };
+            const headers = data instanceof FormData ? { ...jsonHeaders, ...fileHeaders } : jsonHeaders;
+            const response = await this.ax.post(endpoint, data, { headers: { ...headers, ...authHeaders } });
             return response.data;
         } catch (error) {
             throw error;

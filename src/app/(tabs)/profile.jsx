@@ -18,7 +18,7 @@ const Profile = () => {
 
 
           {/* Profile Options */}
-          <View className=" flex flex-col justify-center items-stretch mt-8 w-[350px] space-y-16">
+          <View className=" flex flex-col justify-center items-stretch mt-4 w-[350px] space-y-16">
             {/* Personal Details */}
             <Pressable className="flex-row items-center justify-between my-10  px-2" onPress={() => { router.push("/home") }}>
               <View className="flex-row items-center space-x-2">
@@ -63,10 +63,20 @@ const Profile = () => {
               </View>
               <Image className="w-[8px] h-[15px]" resizeMode="cover" source={require("../../assets/icons/Vector-arrow.png")} />
             </View>
+
+            {/* Logout */}
+            <Pressable className="flex-row items-center justify-between px-2" onPress={() => { router.push("/logout") }}>
+              <View className="flex-row items-center space-x-2">
+                <Image className="w-[24px] h-[24px] mr-4" resizeMode="cover" source={require("../../assets/icons/turn-off.png")} />
+                <Text className="text-[#333] text-[16px] font-medium">Logout</Text>
+              </View>
+              <Image className="w-[8px] h-[15px]" resizeMode="cover" source={require("../../assets/icons/Vector-arrow.png")} />
+            </Pressable>
+
           </View>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </SafeAreaView >
   )
 }
 
